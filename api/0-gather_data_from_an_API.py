@@ -12,7 +12,7 @@ if __name__ == "__main__":
         request user info by employee ID
     """
     request_employee = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/'.format(argv[1]))
+        'USER_ID.json'.format(argv[1]))
     """
         convert json to dictionary
     """
