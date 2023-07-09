@@ -1,50 +1,43 @@
 #!/usr/bin/python3
-""""Module"""
-
+""" Script that uses JSONPlaceholder API to get information about employee """
 import csv
 import json
 import requests
-from sys import argv
+import sys
 
 
 if __name__ == "__main__":
-    """
-        request user info by employee ID
-    """
-    request_employee = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/'.format(argv[1]))
-    """
-        convert json to dictionary
-    """
-    user = json.loads(request_employee.text)
-    """
-        extract username
-    """
-    username = user.get("username")
+    def export_employee_todo_csv(employee_id):
+    """Make a GET request to the API endpoint"""
+    response = requests.get(f'https://jsonplaceholder.typicode.com/users/{employee_id}/todos')
 
-    """
-        request user's TODO list
-    """
-    request_todos = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/todos'.format(argv[1]))
-    """
-        dictionary to store task status(completed) in boolean format
-    """
-    tasks = {}
-    """
-        convert json to list of dictionaries
-    """
-    user_todos = json.loads(request_todos.text)
-    """
-        loop through dictionary & get completed tasks
-    """
-    for dictionary in user_todos:
-        tasks.update({dictionary.get("title"): dictionary.get("completed")})
+    if response.status_code == 200:
+        todos = response.json()
 
-    """
-        export to CSV
-    """
-    with open('{}.csv'.format(argv[1]), mode='w') as file:
-        file_editor = csv.writer(file, delimiter=',', quoting=csv.QUOTE_ALL)
-        for k, v in tasks.items():
-            file_editor.writerow([argv[1], username, v, k])
+ 
+        task_data = []
+        for task in todos:
+            task_data.append([
+                task['userId'],
+                task['username'],
+                str(task['completed']),
+                task['title']
+            ])
+
+        
+        file_name = f"{employee_id}.csv"
+
+       
+        with open(file_name, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["USER_ID", "USERNAME", "TASK_COMPLETED_STATUS", "TASK_TITLE"])
+            writer.writerows(task_data)
+
+        print(f"TODO list exported to {file_name} successfully.")
+
+    else:
+        print(f"Failed to retrieve TODO list for employee {employee_id}.")
+
+
+         employee_id = int(input("Enter the employee ID: "))
+    export_employee_todo_csv(employee_id)
