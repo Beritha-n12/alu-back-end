@@ -1,34 +1,27 @@
-#!/usr/bin/python3
-""" Script that uses JSONPlaceholder API to get information about employee """
+""" Call API and store data in CSV """
 import csv
 import requests
-import sys
+from sys import argv
 
 
-if __name__ == "__main__":
-    url = 'https://jsonplaceholder.typicode.com/'
+if __name__ == '__main__':
+    employee_id = argv[1]
+    url_todo = 'https://jsonplaceholder.typicode.com/todos/'
+    url_user = 'https://jsonplaceholder.typicode.com/users/'
+    todo = requests.get(url_todo, params={'userId': employee_id})
+    user = requests.get(url_user, params={'id': employee_id})
 
-    userid = sys.argv[1]
-    user = '{}users/{}'.format(url, userid)
-    res = requests.get(user)
-    json_o = res.json()
-    name = json_o.get('username')
+    todo_dict_list = todo.json()
+    user_dict_list = user.json()
 
-    todos = '{}todos?userId={}'.format(url, userid)
-    res = requests.get(todos)
-    tasks = res.json()
-    l_task = []
-    for task in tasks:
-        l_task.append([userid,
-                       name,
-                       task.get('completed'),
-                       task.get('title')])
+    employee = user_dict_list[0].get('username')
 
-    filename = '{}.csv'.format(userid)
-    with open(filename, mode='w') as employee_file:
-        employee_writer = csv.writer(employee_file,
-                                     delimiter=',',
-                                     quotechar='"',
-                                     quoting=csv.QUOTE_ALL)
-        for task in l_task:
-            employee_writer.writerow(task)
+    with open("{}.csv".format(employee_id), "a+") as csvfile:
+        csvwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+        for task in todo_dict_list:
+            status = task['completed']
+            title = task['title']
+            csvwriter.writerow(["{}".format(employee_id),
+                                "{}".format(employee),
+                                "{}".format(status),
+                                "{}".format(title)])
